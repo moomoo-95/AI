@@ -1,10 +1,9 @@
 import os
 import struct
 import numpy as np
-# from scipy.special import expit
-import sys
+# import sys
 import matplotlib.pyplot as plt
-import pickle
+# import pickle
 import time
 
 # MNIST의 학습 데이터와 테스트 데이터 읽어서 각각 numpy 배열 images, labels로 저장해 리턴하는 함수
@@ -191,12 +190,13 @@ class NeuralMetMLP():
         DELTA_w2_prev = np.zeros(self.w2.shape)
         start = time.time()
         last_epochs = self.epochs
+        accurancy = []
         for i in range(self.epochs):
+
             # adaptive learning rate
             self.eta /= (1 + self.decrease_const*i)
             # epoch 당 평균 에러율
             avg_err = 0.
-
             if self.shuffle:
                 idx = np.random.permutation(y_data.shape[0])
                 X_data, y_data = X_data[idx], y_data[idx]
@@ -220,12 +220,20 @@ class NeuralMetMLP():
             self.cost_.append(avg_err)
             if print_progress:
                 print("Epoch:", '%02d' % (i+1), "error=", "{:.9f}".format(avg_err))
+            accurancy.append(self.accurancy_check(False))
             if self.accurancy_check(False) >= finish:
                 last_epochs = i
                 break
         # plt.scatter(range(1, self.epochs +1), self.cost_)
         print("Training Time :", "{:.2f}".format(time.time() - start), "s")
-        plt.plot(range(1, last_epochs +2), self.cost_)
+        plt.subplot(211)
+        plt.plot(range(1, last_epochs + 2), self.cost_)
+        plt.ylabel('Error Rate(%)')
+        plt.xlabel('Epochs')
+        plt.subplot(212)
+        plt.plot(range(1, last_epochs + 2), accurancy)
+        plt.ylabel('Accurancy Rate(%)')
+        plt.xlabel('Epochs')
         self.accurancy_check(True)
         return self
     
@@ -240,9 +248,9 @@ X_validation = X_train[:VALIDATION_SIZE, ...]
 y_validation = y_train[:VALIDATION_SIZE]
 # show_all_digits()
 # show_n_digits(6)
-order=['learning_rate=0.0001', 'learning_rate=0.001', 'learning_rate=0.01']
-# order=['MLP']
-finish = 80.0
+# order=['learning_rate=0.0001', 'learning_rate=0.001', 'learning_rate=0.01']
+order=['MLP']
+finish = 97.0
 mlp = NeuralMetMLP(n_output=10, n_features=X_train.shape[1], n_hidden=50,
                     l1=0.0, l2=0.1, epochs=1000, eta=0.001, alpha=0.001,
                     decrease_const=0.00001, shuffle=True, minibatches=100, random_state=1)
@@ -265,7 +273,8 @@ mlp.fit(X_train, y_train, print_progress=True)
 # print('학습 데이터 로드 완료')
 
 
-plt.ylabel('Error Rate')
-plt.xlabel('Epochs')
-plt.legend(order)
+# plt.ylabel('Error Rate')
+# plt.ylabel('Accurancy Rate(%)')
+# plt.xlabel('Epochs')
+# plt.legend(order)
 plt.show()
